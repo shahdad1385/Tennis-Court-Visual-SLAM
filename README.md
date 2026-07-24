@@ -74,6 +74,26 @@ python -m keypoint_detection.inference.live_stream --model weights/best.pt --cam
 - Direct integration with `cv2.solvePnP` via `solvepnp_bridge.py`
 - YOLO pose format with 8 keypoints and visibility flags
 
+### 4. Semantic Segmentation (Fast-SCNN / U-Net)
+
+The `segmentation/` module provides a pipeline for pixel-level segmentation of pitch lines and net poles using TensorRT or ONNX models.
+
+**Classes:**
+- **Class 1 (Pitch Lines):** Ground lines for grid detection.
+- **Class 2 (Poles):** Vertical net poles for localization.
+
+**Usage:**
+```bash
+# Run live segmentation with an ONNX model
+python -m segmentation.inference.live_stream --model weights/seg_model.onnx --backend onnx
+```
+
+**Key Features:**
+- Lightweight ONNX/TensorRT inference engine.
+- Morphological post-processing (dilation/erosion) to clean edge noise.
+- Integrated `GridCalculator` to estimate grid distances from segmented masks using homography.
+- Real-time bird's-eye view visualization of segmented lines.
+
 ## Dependencies
 
 - Python 3.x
