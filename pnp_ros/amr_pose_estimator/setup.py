@@ -24,6 +24,7 @@ setup(
             'pnp_node = amr_pose_estimator.pnp_pose_node:main',
             'slam_tf_broadcaster = amr_pose_estimator.slam_tf_broadcaster:main',
             'tracking_monitor = amr_pose_estimator.tracking_monitor:main',
+            'ball_throwing_smach = amr_pose_estimator.smach_coordinator:main',
         ],
     },
 )

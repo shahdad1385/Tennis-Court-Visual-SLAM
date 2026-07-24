@@ -17,6 +17,8 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>robot_localization</depend>
+  <depend>smach</depend>
+  <depend>smach_ros</depend>
 
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>python3-numpy</exec_depend>

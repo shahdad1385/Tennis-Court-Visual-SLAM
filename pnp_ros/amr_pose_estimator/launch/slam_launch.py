@@ -155,6 +155,14 @@ def generate_launch_description():
         output='screen'
     )
     
+    # Ball Throwing State Machine (SMACH)
+    smach_node = Node(
+        package='amr_pose_estimator',
+        executable='ball_throwing_smach',
+        name='ball_throwing_smach',
+        output='screen'
+    )
+    
     return LaunchDescription([
         # Launch arguments
         camera_matrix_arg,
@@ -171,4 +179,5 @@ def generate_launch_description():
         ekf_map_node,
         slam_node,
         rviz_node,
+        smach_node,
     ])
