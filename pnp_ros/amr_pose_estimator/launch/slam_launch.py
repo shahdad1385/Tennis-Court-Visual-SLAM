@@ -44,6 +44,7 @@ def generate_launch_description():
     config_dir = os.path.join(pkg_share, 'config')
     orb_slam_config = os.path.join(config_dir, 'orb_slam3_params.yaml')
     slam_config = os.path.join(config_dir, 'slam_config.yaml')
+    ekf_config = os.path.join(config_dir, 'ekf.yaml')
     
     # Static transform: base_link -> camera_link
     static_tf_camera = Node(
@@ -101,6 +102,29 @@ def generate_launch_description():
         }]
     )
     
+    # EKF Filter Node (world_frame = odom)
+    # Fuses wheel odometry, IMU, and visual pose
+    # Publishes: odom -> base_link transform
+    ekf_odom_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[ekf_config],
+        remappings=[('odometry/filtered', '/odom')]
+    )
+    
+    # Map Filter Node (world_frame = map)
+    # Corrects map -> odom drift using visual pose
+    ekf_map_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='map_filter_node',
+        output='screen',
+        parameters=[ekf_config],
+        remappings=[('odometry/filtered', '/map/odom')]
+    )
+    
     # ORB-SLAM3 Node (placeholder - replace with actual ORB-SLAM3 ROS wrapper)
     # Note: ORB-SLAM3 doesn't have an official ROS 2 wrapper.
     # Options:
@@ -143,6 +167,8 @@ def generate_launch_description():
         pnp_node,
         slam_tf_node,
         tracking_monitor_node,
+        ekf_odom_node,
+        ekf_map_node,
         slam_node,
         rviz_node,
     ])

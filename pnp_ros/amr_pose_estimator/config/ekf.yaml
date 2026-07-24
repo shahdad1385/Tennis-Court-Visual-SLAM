@@ -1,0 +1,178 @@
+# EKF Configuration for robot_localization
+# Fuses wheel odometry, IMU, and visual pose for continuous AMR state estimation.
+
+# EKF Filter Node (world frame = odom)
+# Publishes: odom -> base_link transform
+# Provides continuous tracking even when visual pose drops out.
+
+ekf_filter_node:
+  ros__parameters:
+    # General settings
+    frequency: 30.0
+    two_d_mode: true
+    print_diagnostics: true
+    debug: false
+    permit_corrected_publication: true
+    
+    # Frame configuration
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom
+    
+    # =========================================
+    # Sensor 0: Wheel Odometry (Continuous)
+    # Topic: /odom/wheels
+    # Provides: Position X, Y; Velocity X, Y; Angular Z
+    # Trust level: HIGH (primary dead-reckoning source)
+    # =========================================
+    odom0: /odom/wheels
+    odom0_config: [true,  true,  false,   # x, y, z
+                   false, false, true,    # roll, pitch, yaw
+                   true,  true,  false,   # vx, vy, vz
+                   false, false, true,    # vroll, vpitch, vyaw
+                   false, false, false]   # ax, ay, az
+    odom0_differential: false
+    odom0_relative: false
+    odom0_queue_size: 10
+    
+    # =========================================
+    # Sensor 1: IMU (Continuous)
+    # Topic: /imu/data
+    # Provides: Orientation (roll, pitch, yaw); Angular Z; Linear Accel X
+    # Trust level: HIGH (reliable orientation source)
+    # =========================================
+    imu1: /imu/data
+    imu1_config: [false, false, false,   # x, y, z
+                  true,  true,  true,    # roll, pitch, yaw
+                  false, false, false,   # vx, vy, vz
+                  true,  true,  true,    # vroll, vpitch, vyaw
+                  true,  false, false]   # ax, ay, az
+    imu1_differential: false
+    imu1_relative: true
+    imu1_queue_size: 10
+    imu1_remove_gravitational_acceleration: true
+    
+    # =========================================
+    # Sensor 2: Visual Pose (Absolute, Dropout-Prone)
+    # Topic: /vision/robot_pose
+    # Provides: Absolute Pose X, Y, Yaw
+    # Trust level: MEDIUM (gradual correction, higher covariance)
+    # Key: Higher covariance prevents sudden jumps on re-entry
+    # =========================================
+    pose0: /vision/robot_pose
+    pose0_config: [true,  true,  false,   # x, y, z
+                   false, false, true,    # roll, pitch, yaw
+                   false, false, false,   # vx, vy, vz
+                   false, false, false,   # vroll, vpitch, vyaw
+                   false, false, false]   # ax, ay, az
+    pose0_differential: false
+    pose0_relative: false
+    pose0_queue_size: 10
+    
+    # =========================================
+    # Initial Estimate Covariance (15x15 matrix)
+    # Diagonal elements only (row-major order)
+    # Higher values = less confidence in initial state
+    # =========================================
+    initial_estimate_covariance: [1e-9, 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9]
+    
+    # =========================================
+    # Process Noise Covariance (15x15 matrix)
+    # Diagonal elements only (row-major order)
+    # Controls how quickly state uncertainty grows
+    # Lower values = smoother tracking, higher values = more responsive
+    # =========================================
+    process_noise_covariance: [0.05,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.05,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.06,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.03,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.03,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.06,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.025,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.025,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.04,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.02,   0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.01,   0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.015]
+
+
+# =========================================
+# Map Filter Node (world frame = map)
+# Optional: Corrects map -> odom drift using visual pose
+# Publishes: map -> odom transform
+# =========================================
+map_filter_node:
+  ros__parameters:
+    # General settings
+    frequency: 10.0
+    two_d_mode: true
+    print_diagnostics: true
+    debug: false
+    
+    # Frame configuration
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: map
+    
+    # Use visual pose for map-odom correction
+    # This provides global localization to correct long-term drift
+    pose0: /vision/robot_pose
+    pose0_config: [true,  true,  false,   # x, y, z
+                   false, false, true,    # roll, pitch, yaw
+                   false, false, false,   # vx, vy, vz
+                   false, false, false,   # vroll, vpitch, vyaw
+                   false, false, false]   # ax, ay, az
+    pose0_differential: false
+    pose0_relative: false
+    pose0_queue_size: 10
+    
+    # Initial estimate covariance
+    initial_estimate_covariance: [1e-9, 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,    0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9,   0.0,
+                                  0.0,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    1e-9]
+    
+    # Process noise - very low for map filter (gradual correction)
+    process_noise_covariance: [0.001, 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.001,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.001,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.001,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.001,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.001,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.001,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.001,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.001,  0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.001,  0.0,    0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.001,  0.0,    0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.001,  0.0,    0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.001,  0.0,    0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.001,  0.0,
+                               0.0,   0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.001]
