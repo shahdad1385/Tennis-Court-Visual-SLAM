@@ -6,6 +6,7 @@ This repository contains vision-based modules for an Autonomous Mobile Robot (AM
 
 - `ipm/`: Inverse Perspective Mapping module for bird's-eye view generation and grid detection.
 - `pnp_ros/`: ROS 2 package for 6DoF pose estimation using OpenCV PnP.
+- `keypoint_detection/`: Custom YOLOv8-Pose keypoint detection for net poles and grid intersections.
 - `Report.md`: Detailed technical report of the implementation.
 
 ## Modules
@@ -41,12 +42,45 @@ colcon build
 ros2 launch amr_pose_estimator pnp_launch.py
 ```
 
+### 3. Custom Keypoint Detection (YOLOv8-Pose)
+
+The `keypoint_detection/` module provides a trained YOLOv8-Pose model to detect 8 keypoints on the tennis court: 4 net poles and 4 grid intersections.
+
+**Keypoints (8 total):**
+
+| Index | Name | 3D World Coords (m) |
+|-------|------|---------------------|
+| 0 | left_pole_base | (-5.485, 0.0, 0.0) |
+| 1 | left_pole_top | (-5.485, 0.0, 1.07) |
+| 2 | right_pole_base | (5.485, 0.0, 0.0) |
+| 3 | right_pole_top | (5.485, 0.0, 1.07) |
+| 4 | service_line_center | (0.0, 6.40, 0.0) |
+| 5 | service_line_left | (-5.485, 6.40, 0.0) |
+| 6 | baseline_center | (0.0, 11.885, 0.0) |
+| 7 | service_line_right | (5.485, 6.40, 0.0) |
+
+**Usage:**
+```bash
+# Generate sample dataset for testing
+python keypoint_detection/dataset/create_sample_dataset.py
+
+# Run live inference
+python -m keypoint_detection.inference.live_stream --model weights/best.pt --camera 0
+```
+
+**Key Features:**
+- 30 FPS real-time inference with confidence filtering (≥0.6)
+- Temporal smoothing for stable keypoint tracking
+- Direct integration with `cv2.solvePnP` via `solvepnp_bridge.py`
+- YOLO pose format with 8 keypoints and visibility flags
+
 ## Dependencies
 
 - Python 3.x
 - OpenCV (`cv2`)
 - NumPy
 - SciPy
+- Ultralytics (YOLOv8)
 - ROS 2 (Humble/Iron/Jazzy)
 - `geometry_msgs`, `rclpy`
 
