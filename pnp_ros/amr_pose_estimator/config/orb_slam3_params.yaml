@@ -1,0 +1,48 @@
+# ORB-SLAM3 Configuration for Tennis Court AMR
+# Camera: RGB Monocular, 640x480, 30 FPS
+
+# Camera intrinsics (MUST be calibrated for your specific camera)
+Camera.fx: 600.0
+Camera.fy: 600.0
+Camera.cx: 320.0
+Camera.cy: 240.0
+
+# Distortion coefficients (assuming no distortion for pinhole model)
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+
+# Camera resolution
+Camera.width: 640
+Camera.height: 480
+
+# Camera FPS
+Camera.fps: 30.0
+
+# Color order (0: BGR, 1: RGB)
+Camera.RGB: 1
+
+# ORB parameters
+ORBextractor.nFeatures: 1000
+ORBextractor.scaleFactor: 1.2
+ORBextractor.nLevels: 8
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+# SLAM system settings
+System.UseViewer: false
+System.EnableImu: false
+
+# Map settings
+Map.MaxFrames: 10
+Map.MinFrames: 0
+Map.LocalMappingMaxKF: 10
+Map.GlobalMapSizeKF: 1000
+
+# Tracking settings
+Tracking.bUseIMU: false
+Tracking.bUseFixScale: true
+
+# Viewer settings (disabled for headless operation)
+Viewer.Enable: false

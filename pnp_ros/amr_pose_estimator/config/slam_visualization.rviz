@@ -1,0 +1,78 @@
+# RViz Configuration for Visual SLAM Integration
+# Displays TF tree, robot pose, and point clouds
+
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+
+Visualization Manager:
+  Displays:
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Update Interval: 0
+      Value: true
+    
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Description Source: Topic
+      Robot Description Topic: /robot_description
+      TF Prefix: ''
+      Update Interval: 0
+      Value: true
+    
+    - Class: rviz_default_plugins/PoseArray
+      Name: PnP Pose
+      Enabled: true
+      Topic: /vision/robot_pose
+      Position Color: 255; 0; 0
+      Orientation Color: 0; 255; 0
+      Value: true
+    
+    - Class: rviz_default_plugins/Marker
+      Name: SLAM Status
+      Enabled: true
+      Namespaces: {}
+      Value: true
+
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: map
+    Frame Rate: 30
+  
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 10
+      Enable Stereo Rendering:
+        Stereo Enabled: false
+      Field of View: 0.7854
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.5
+      Target Frame: base_link
+      Yaw: 3.14159
+
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 800
+  Width: 1200
+  Views:
+    collapsed: false

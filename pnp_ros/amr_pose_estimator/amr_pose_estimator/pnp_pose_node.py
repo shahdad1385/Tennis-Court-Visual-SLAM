@@ -74,7 +74,7 @@ class PnpPoseNode(Node):
             # Create Pose Message
             pose_msg = PoseWithCovarianceStamped()
             pose_msg.header.stamp = self.get_clock().now().to_msg()
-            pose_msg.header.frame_id = 'world'
+            pose_msg.header.frame_id = 'map'
             
             # solvePnP returns the transform from Object (World) to Camera (Robot).
             # We want the Robot's pose in the World frame, so we invert the transform.

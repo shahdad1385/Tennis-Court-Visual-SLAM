@@ -1,0 +1,69 @@
+# Visual SLAM Integration Configuration
+# For ORB-SLAM3 + RGB Monocular Camera on AMR
+
+# Camera mounting configuration
+camera:
+  height_above_ground: 0.6  # meters (z=0.6m above base_link)
+  frame_id: "camera_link"
+  base_frame: "base_link"
+
+# Pitch coordinate system (origin at center of net on ground)
+pitch:
+  origin:
+    x: 0.0    # Lateral (right is positive)
+    y: 0.0    # Forward (away from camera is positive)
+    z: 0.0    # Up
+  
+  # Net pole 3D coordinates for initial pose estimation
+  net_poles:
+    left_base:  [-5.485, 0.0, 0.0]
+    left_top:   [-5.485, 0.0, 1.07]
+    right_base: [ 5.485, 0.0, 0.0]
+    right_top:  [ 5.485, 0.0, 1.07]
+
+# TF tree configuration
+tf:
+  map_frame: "map"
+  odom_frame: "odom"
+  base_frame: "base_link"
+  camera_frame: "camera_link"
+  
+  # Static transform: base_link -> camera_link
+  base_to_camera:
+    x: 0.0
+    y: 0.0
+    z: 0.6
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+
+# SLAM tracking status
+tracking:
+  status_topics:
+    ok: "OK"
+    lost: "LOST"
+    reinitializing: "REINITIALIZING"
+    not_initialized: "NOT_INITIALIZED"
+  
+  # Visual loss recovery
+  recovery:
+    max_lost_frames: 30          # Frames before declaring LOST
+    reinit_attempts: 3           # Max reinitialization attempts
+    fallback_to_odom: true       # Use odom dead reckoning when LOST
+    pole_relocalize: true        # Use PnP poles for relocalization
+
+# PnP initial pose alignment
+initial_pose:
+  enabled: true
+  min_pole_detections: 4        # Minimum keypoints for valid PnP
+  confidence_threshold: 0.6     # Minimum keypoint confidence
+  alignment_method: "direct"    # "direct" or "kalman"
+
+# Topics
+topics:
+  slam_pose: "/orb_slam3/camera_pose"
+  pnp_pose: "/vision/robot_pose"
+  landmarks_2d: "/vision/landmarks_2d"
+  slam_status: "/vision/slam_status"
+  tf: "/tf"
+  tf_static: "/tf_static"
